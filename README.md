@@ -1,2 +1,2 @@
 # PHP_DateTime
-PHP DateTime Libraries
+PHP DateTime class library
