@@ -1,6 +1,6 @@
 {
-    "name": "guodf/DateTime",
-    "keywords":["DateTime","date","time"],
+    "name": "guodf/datetime",
+    "keywords":["datetime","date","time"],
     "description": "DateTime class library",
     "type": "library",
     "authors": [
