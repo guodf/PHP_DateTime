@@ -2,6 +2,7 @@
     "name": "guodf/datetime",
     "keywords":["datetime","date","time"],
     "description": "DateTime class library",
+    "license":"MIT",
     "type": "library",
     "authors": [
         {
