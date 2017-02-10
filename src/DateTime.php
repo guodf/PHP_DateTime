@@ -1,12 +1,6 @@
 <?php
 namespace System;
 
-require_once('DateTimeException.php');
-require_once('TimeZone.php'); 
-
-use System\DateTimeException;
-use System\TimeZone;
-
 class DateTime
 {
     private $_dateTime = 0;
@@ -111,7 +105,7 @@ class DateTime
     public static function Now()
     {
         $date = new DateTime();
-        $date->_dateTime = self::getUtcNow()+(new TimeZone)->getOffset()*self::$Second;
+        $date->_dateTime = self::getUtcNow()+$date->_timeZone->offset*self::$Second;        
         return $date;
     }
 
@@ -124,6 +118,7 @@ class DateTime
     {
         $date = new DateTime();
         $date->_dateTime = self::getUtcNow();
+        $date->_timeZone=new TimeZone('utc');
         return $date;
     }
 
@@ -140,15 +135,28 @@ class DateTime
         return $year % 4 == 0 && ($year % 100 != 0 || $year % 400 == 0);
     }
 
-    // /**
-    // * Returns the number of days in the specified month and year.
-    // *
-    // * @return int
-    // */
-    // public static function DaysInMonth($year,$month)
-    // {
+    /**
+    *
+    * @param DateTime $dt1
+    * @param DateTime $dt2
+    *
+    * @return int [-1,0,1]
+    */
+    public static function Compare($dt1,$dt2)
+    {
+        $diff=$dt1->Timestamp - $dt2->Timestamp;
+        return $diff=0? 0:($diff>0? 1:-1);
+    }
 
-    // }
+    /**
+    * Returns the number of days in the specified month and year.
+    *
+    * @return int
+    */
+    public static function DaysInMonth($year,$month)
+    {
+        return self::getDaysByMonth($year,$month);
+    }
 
     /*********************************************************************/
 
@@ -164,11 +172,13 @@ class DateTime
      * @param int [0,999]       $millisecond
      * @param int [0,999]       $microsecond
      *
-     * @see https://guodf.github.com/PHP_DateTime
+     * @return DateTime 
+     * @see homepage https://guodf.github.com/PHP_DateTime
      */
     public function __construct($year = 1, $month = 1, $day = 1, $hour = 0, $minute = 0, $second = 0, $millisecond = 0,$microsecond=0)
     {
         $this->_dateTime = $this->getDateNS($year,$month,$day)+$this->getTimeNS($hour,$minute,$second,$microsecond,$microsecond);
+        $this->_timeZone=new TimeZone();
     }
 
     /**
@@ -191,7 +201,7 @@ class DateTime
     public function __set($name, $value)
     {
         switch ($name){
-            case 'Size':
+            case 'Timestamp':
                 $this->_dateTime=$value;
                 break;
             default:
@@ -220,7 +230,7 @@ class DateTime
     private static function checkYear($year)
     {
         if ($year <1 || $year > 9999){
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在[1,9999]年之间', 0, null);
         }
     }
 
@@ -229,10 +239,10 @@ class DateTime
      *
      * @param  int $month
      */
-    private function checkMonth($month)
+    private static function checkMonth($month)
     {
         if ($month < 1 || $month > 12) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在[1,12]月之间', 0, null);
         }
     }
 
@@ -245,9 +255,9 @@ class DateTime
      */
     private function checkDay($year, $month, $day)
     {
-        $days=$this->getDaysByMonth($year,$month);
+        $days=self::getDaysByMonth($year,$month);
         if ($day < 1 || $day > $days) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException("必须在[1,$days]之间", 0, null);
         }
     }
 
@@ -259,7 +269,7 @@ class DateTime
     private function checkHour($hour)
     {
         if ($hour < 0 && $hour > 23) {
-           throw new DateTimeException('d', 0, null);
+           throw new DateTimeException('必须在[0,23]之间', 0, null);
         }
     }
 
@@ -271,7 +281,7 @@ class DateTime
     private function checkMinute($minute)
     {
         if ($minute < 0 || $minute > 59) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在[0,59]之间', 0, null);
         }
     }
 
@@ -283,7 +293,7 @@ class DateTime
     private function checkSecond($second)
     {
         if ($second < 0 || $second > 59) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在[0,59]之间', 0, null);
         }
     }
 
@@ -295,7 +305,7 @@ class DateTime
     private function checMillisecond($millisecond)
     {
         if ($millisecond < 0 || $millisecond > 999) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在[0,999]之间', 0, null);
         }
     }
 
@@ -307,7 +317,7 @@ class DateTime
     private function checMicrosecond($microsecond)
     {
         if ($microsecond <0 || $microsecond > 999) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在[0,999]之间', 0, null);
         }
     }
 
@@ -320,7 +330,7 @@ class DateTime
     private function getDateTimePart($part)
     {
         switch ($part) {
-            case 'Size':
+            case 'Timestamp':
                 return $this->_dateTime;
             case 'Year':
             case 'Month':
@@ -335,7 +345,7 @@ class DateTime
             case 'Microsecond':
                 return $this->getTimePart($part);
             default:
-                throw new DateTimeException("Error Processing Request", 1, null);
+                throw new DateTimeException("不存在的属性调用", 1, null);
                 break;
         }
     }
@@ -424,10 +434,10 @@ class DateTime
      * @param  int $month
      * @return int
      */
-    private function getDaysByMonth($year, $month)
+    private static function getDaysByMonth($year, $month)
     {
-        $this->checkYear($year);
-        $this->checkMonth($month);
+        self::checkYear($year);
+        self::checkMonth($month);
 
         $days = self::isLeapYear($year) ? self::$DaysToMonth366 : self::$DaysToMonth365;
         return $days[$month] - $days[$month - 1];
@@ -491,7 +501,7 @@ class DateTime
      */
     public function addDateTime($dateTime)
     {
-        $this->Size+=$dateTime->Size;
+        $this->Timestamp+=$dateTime->Timestamp;
         return $this;
     }
 
@@ -504,7 +514,7 @@ class DateTime
     public function addYear($years)
     {
         if ($years < -10000 || $years > 10000) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在(-10000,10000]之间', 0, null);
         }
         return $this->addMonths($years * 12);
     }
@@ -518,7 +528,7 @@ class DateTime
     public function addMonths($months)
     {
         if ($months < -120000 || $months > 120000) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在(-12000,12000)之间', 0, null);
         }
         $year = $this->getDatePart('Year');
         $month = $this->getDatePart('Month');
@@ -533,7 +543,7 @@ class DateTime
             $month = ($months + 1) % 12 + 12;
         }
         if ($year < 1 || $year > 9999) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('必须在[1,999]之间', 0, null);
         }
         $nDays = $this->getDaysByMonth($year, $month);
         $day = $day > $nDays ? $nDays : $day;
@@ -610,10 +620,25 @@ class DateTime
     {
         $this->_dateTime += $microseconds;
         if ($this->_dateTime < self::$MinValue || $this->_dateTime > self::$MaxValue) {
-            throw new DateTimeException('d', 0, null);
+            throw new DateTimeException('超出DateTime支持范围', 0, null);
         }
         return $this;
     }
-
+    
     /*******************************************************************************/
+
+    /**
+    * Change DateTime TimeZone
+    * 
+    * @param TimeZone $tz
+    *
+    * @return DateTime
+    */
+    public function changeTimeZone($tz)
+    {
+        $this->_dateTime+=($tz->offset-$this->_timeZone->offset)*self::$Second;
+        $this->_timeZone=$tz;
+        return $this;
+    }
+    
 }

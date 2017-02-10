@@ -9,14 +9,10 @@ class TimeZone extends \DateTimeZone
         parent::__construct($tzName);
     }
 
-    /**
-    *
-    * Get TimeZone offset
-    *
-    * @return int seconds
-    */
-    public function getOffset()
+    public function __get($name)
     {
-        return parent::getOffset(date_create('now'));
+        if($name=='offset'){
+            return parent::getOffset(date_create('now'));
+        }
     }
 }

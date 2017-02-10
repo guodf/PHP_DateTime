@@ -1,8 +1,9 @@
 <?php
-include __DIR__ . '/../src/DateTime.php';
+require_once __DIR__ .'./../vendor/autoload.php';
 
 use System\DateTime;
 use System\DateTimeException;
+use System\TimeZone;
 
 function writeLine($dt)
 {
@@ -27,7 +28,10 @@ try
     writeLine($now);
     $utcNow=DateTime::UtcNow();
     writeLine($utcNow);
+    var_dump(DateTime::IsLeapYear(2000));
+    echo DateTime::DaysInMonth(2017,2);
 
+    //DateTime::Compamer($dt1,$dt2);
     //DateTime add 操作
     $time=new DateTime();
     $time->addDateTime(new DateTime(1,1,1));
@@ -41,7 +45,40 @@ try
     $time->addMilliseconds(10);
     $time->addMicroseconds(10);
     writeLine($time);
+
+    //DateTime get 操作
+    echo $time->Year;
+    echo $time->Month;
+    echo $time->Day;
+    echo $time->DayOfWeek;
+    echo $time->DayOfYear;
+    echo $time->Hour;
+    echo $time->Minute;
+    echo $time->Second;
+    echo $time->Millisecond;
+    echo $time->Microsecond;
+    echo $time->Timestamp;
+
+    //DateTime 比较大小
+    var_dump(DateTime::Now()->Timestamp >= DateTime::Now()->Timestamp);
+    echo DateTime::Compare(DateTime::Now(),DateTime::Now());
+
+    //改变时区
+    writeLine(DateTime::Now()->ChangeTimeZone(new TimeZone('utc')));
+
+    //格式化时间字符串
+    //echo DateTime::Format(DateTime::Now());
     
+    // //DateTime set 操作
+    // $time->setYear(1);
+    // $time->setMonth(1);
+    // $time->setDay(1);
+    // $time->setHour(1);
+    // $time->setMinute(1);
+    // $time->setSecond(1);
+    // $time->setMillisecond(10);
+    // $time->setMicrosecond(10);
+
 }
 catch(DateTimeException $e)
 {
