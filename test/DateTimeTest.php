@@ -58,6 +58,9 @@ try
     echo $time->Millisecond;
     echo $time->Microsecond;
     echo $time->Timestamp;
+    $date=DateTime::Now();
+    echo $date->Date;
+    echo $date->Date->addDays(1);
 
     //DateTime 比较大小
     var_dump(DateTime::Now()->Timestamp >= DateTime::Now()->Timestamp);

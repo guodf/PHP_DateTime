@@ -344,10 +344,21 @@ class DateTime
             case 'Millisecond':
             case 'Microsecond':
                 return $this->getTimePart($part);
+            case 'Date':
+                return $this->getDate();
             default:
                 throw new DateTimeException("不存在的属性调用", 1, null);
                 break;
         }
+    }
+
+    /**
+    * Get date
+    *
+    */
+    private function getDate()
+    {
+        return new DateTime($this->Year,$this->Month,$this->Day);
     }
 
     /**
